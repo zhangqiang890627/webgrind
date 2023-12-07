@@ -135,6 +135,7 @@ class Webgrind_Preprocessor
                     $cost = $data['cost'];
                 }
 
+                $summedCost = ($calledIndex != $index) ? $cost : 0; // recursive call not summed
                 $functions[$index]['summedInclusiveCost'] += $cost;
 
                 $key = $index.$lnr;
@@ -143,7 +144,7 @@ class Webgrind_Preprocessor
                 }
 
                 $functions[$calledIndex]['calledFromInformation'][$key]['callCount']++;
-                $functions[$calledIndex]['calledFromInformation'][$key]['summedCallCost'] += $cost;
+                $functions[$calledIndex]['calledFromInformation'][$key]['summedCallCost'] += $summedCost;
 
                 $calledKey = $calledIndex.$lnr;
                 if (!isset($functions[$index]['subCallInformation'][$calledKey])) {
@@ -151,7 +152,7 @@ class Webgrind_Preprocessor
                 }
 
                 $functions[$index]['subCallInformation'][$calledKey]['callCount']++;
-                $functions[$index]['subCallInformation'][$calledKey]['summedCallCost'] += $cost;
+                $functions[$index]['subCallInformation'][$calledKey]['summedCallCost'] += $summedCost;
 
             } else if (strpos($line, ': ') !== false) {
                 // Found header
