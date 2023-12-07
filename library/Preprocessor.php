@@ -135,8 +135,10 @@ class Webgrind_Preprocessor
                     $cost = $data['cost'];
                 }
 
-                $summedCost = ($calledIndex != $index) ? $cost : 0; // recursive call not summed
-                $functions[$index]['summedInclusiveCost'] += $cost;
+                $recursiveCall = ($calledIndex == $index); // if recursvie call
+                if (!$recursiveCall) {
+                    $functions[$index]['summedInclusiveCost'] += $cost;
+                }
 
                 $key = $index.$lnr;
                 if (!isset($functions[$calledIndex]['calledFromInformation'][$key])) {
@@ -144,7 +146,11 @@ class Webgrind_Preprocessor
                 }
 
                 $functions[$calledIndex]['calledFromInformation'][$key]['callCount']++;
-                $functions[$calledIndex]['calledFromInformation'][$key]['summedCallCost'] += $summedCost;
+                if ($recursiveCall) { // if recursive call
+                    $functions[$calledIndex]['calledFromInformation'][$key]['summedCallCost'] = $functions[$index]['summedSelfCost'];
+                } else {
+                    $functions[$calledIndex]['calledFromInformation'][$key]['summedCallCost'] += $cost;
+                }
 
                 $calledKey = $calledIndex.$lnr;
                 if (!isset($functions[$index]['subCallInformation'][$calledKey])) {
@@ -152,7 +158,11 @@ class Webgrind_Preprocessor
                 }
 
                 $functions[$index]['subCallInformation'][$calledKey]['callCount']++;
-                $functions[$index]['subCallInformation'][$calledKey]['summedCallCost'] += $summedCost;
+                if ($recursiveCall) { // if recursive call
+                    $functions[$index]['subCallInformation'][$calledKey]['summedCallCost'] = $functions[$index]['summedSelfCost'];
+                } else {
+                    $functions[$index]['subCallInformation'][$calledKey]['summedCallCost'] += $cost;
+                }
 
             } else if (strpos($line, ': ') !== false) {
                 // Found header
